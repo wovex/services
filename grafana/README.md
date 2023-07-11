@@ -57,3 +57,10 @@ scrape_configs:
       __path__: /var/log/app.log*
 
 ```
+
+
+# Screenshots
+
+![image](https://github.com/wovex/services/blob/master/grafana/imgs/grafana_node_dashboard.png)
+
+![image](https://github.com/wovex/services/blob/master/grafana/imgs/grafana_fastapi_dashboard.png)
