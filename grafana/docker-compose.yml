@@ -1,0 +1,67 @@
+version: "3"
+
+networks:
+  grafana:
+
+volumes:
+  app_data: {}
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.34.0
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    ports:
+      - 9090:9090
+    networks:
+      - grafana
+
+  loki:
+    image: grafana/loki:2.4.2
+    ports:
+      - 3100:3100
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - grafana
+
+  promtail:
+    image: grafana/promtail:2.0.0
+    volumes:
+      - app_data:/var/log
+      - ./promtail/config.yaml:/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml
+    networks:
+      - grafana
+
+  grafana:
+    image: grafana/grafana:10.0.0
+    ports:
+      - 3000:3000
+    networks:
+      - grafana
+    volumes:
+      - ./provisioning/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ./provisioning/dashboards:/var/lib/grafana/dashboards
+      - ./provisioning/datasources:/etc/grafana/provisioning/datasources
+    environment:
+      - "GF_DEFAULT_APP_MODE=development"
+      # - "GF_LOG_LEVEL=debug"
+
+  fastapi-app:
+    build: fastapi-app/
+    image: fastapi-app
+    container_name: fastapi-app
+    volumes:
+      - ./fastapi-app:/workspace
+      - app_data:/var/log
+    ports:
+      - "5000:5000"
+    environment:
+      - APP_NAME=my-app
+      - DEBUG=true
+    networks:
+      - grafana
+    # command: ["--reload", "--port", "5000", "--host" , "0.0.0.0"]

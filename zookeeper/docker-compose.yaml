@@ -1,0 +1,99 @@
+version: '3'
+services:
+  app:
+    build:
+      context: app
+      dockerfile: Dockerfile
+    image: app
+    container_name: app
+    working_dir: /app
+    environment:
+      - DEBUG=true
+    volumes:
+      - ./app/app:/app 
+    ports:
+      - "8000:8000"
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+    networks:
+      - mylab
+  worker1:
+    build:
+      context: worker
+      dockerfile: Dockerfile
+    image: worker
+    container_name: worker1
+    working_dir: /app
+    volumes:
+      - ./worker/app:/app 
+    ports:
+      - "9000:8000"
+    environment:
+      NODE_NAME: node1
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+    networks:
+      - mylab
+  worker2:
+    build:
+      context: worker
+      dockerfile: Dockerfile
+    image: worker
+    container_name: worker2
+    working_dir: /app
+    volumes:
+      - ./worker/app:/app 
+    ports:
+      - "9001:8000"
+    environment:
+      NODE_NAME: node2
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+    networks:
+      - mylab
+  zoo1:
+    image: zookeeper
+    restart: always
+    hostname: zoo1
+    ports:
+      - 2181:2181
+    networks:
+      - mylab
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_TICK_TIME: 5000
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+  zoo2:
+    image: zookeeper
+    restart: always
+    hostname: zoo2
+    ports:
+      - 2182:2181
+    networks:
+      - mylab
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_TICK_TIME: 5000
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+  zoo3:
+    image: zookeeper
+    restart: always
+    hostname: zoo3
+    ports:
+      - 2183:2181
+    networks:
+      - mylab
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_TICK_TIME: 5000
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+
+networks:
+  mylab:
+    driver: bridge
