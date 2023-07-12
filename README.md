@@ -4,4 +4,4 @@
 
 - Grafana
 - Zookeeper
-
+- Redis

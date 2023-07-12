@@ -1,0 +1,61 @@
+version: "3.9"
+services:
+  chat1:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    image: chatroom
+    container_name: chatroom
+    working_dir: /app
+    volumes:
+      - ./backend/app:/app 
+    # ports:
+    #   - "8000:8000"
+    links:
+      - redis
+    depends_on:
+      - redis
+    networks:
+      - mylab
+  chat2:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    image: chatroom
+    container_name: chatroom-2
+    working_dir: /app
+    volumes:
+      - ./backend/app:/app 
+    # ports:
+    #   - "8000:8000"
+    links:
+      - redis
+    depends_on:
+      - redis
+    networks:
+      - mylab
+  redis:
+    image: redis
+    container_name: my-redis
+    restart: always
+    networks:
+      - mylab
+    ports:
+      - 6379:6379
+  nginx:
+    image: nginx
+    restart: always
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - mylab
+    environment:
+      - NGINX_PORT=80
+    ports:
+      - "8000:80"
+    depends_on:
+      - chat1
+      - chat2
+networks:
+  mylab:
+    driver: bridge
