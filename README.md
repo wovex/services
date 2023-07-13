@@ -5,3 +5,4 @@
 - Grafana
 - Zookeeper
 - Redis
+- RabbitMQ
